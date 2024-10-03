@@ -1,12 +1,9 @@
 version: v1.0
-name: Manual Release Pipeline with Dynamic Versioning
+name: Manual Release Pipeline
 
 pipeline:
   jobs:
-    - name: Tag and Release with Version from version.txt
+    - name: Tag and Release with Version
       commands:
-        - checkout
-        - VERSION=$(cat version.txt)
-        - echo "Version extracted: $VERSION"
-        - git tag $VERSION
-        - git push origin $VERSION
+        - git tag $TAG_VERSION
+        - git push origin $TAG_VERSION
