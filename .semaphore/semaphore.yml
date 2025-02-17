@@ -2,14 +2,7 @@ version: v1.0
 name: Manual Release Pipeline
 agent:
   machine:
-    type: s1-prod-ubuntu20-04-amd64-1
-
-pipelines:
-  - name: "Manual Tag and Release Pipeline"
-    auto: false # Disable automatic execution of the pipeline.
-    trigger:
-      manual: true # Enable manual trigger from the Semaphore UI.
-    block: "Tag and Release"
+    type: e1-medium
 
 blocks:
   - name: "Tag and Release"
@@ -21,3 +14,14 @@ blocks:
             - echo "tag -> $TAG_VERSION"
             - git tag $TAG_VERSION
             - git push origin $TAG_VERSION
+
+# Define workflows to control the execution of this pipeline.
+
+# We will have a single pipeline defined for manual execution.
+
+workflows:
+  - name: "manual_release_workflow"
+    on: 
+      - manual # This ensures the workflow is only triggered manually.
+    jobs:
+      - "Tag and Release"
