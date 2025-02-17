@@ -1,9 +1,27 @@
 version: v1.0
 name: Manual Release Pipeline
+agent:
+  machine:
+    type: e1-medium
 
-pipeline:
-  jobs:
-    - name: Tag and Release with Version
-      commands:
-        - git tag $TAG_VERSION
-        - git push origin $TAG_VERSION
+blocks:
+  - name: "Tag and Release"
+    task:
+      jobs:
+        - name: "Tag and Release with Version"
+          commands:
+            - checkout
+            - echo "tag -> $TAG_VERSION"
+            - git tag $TAG_VERSION
+            - git push origin $TAG_VERSION
+
+# Define workflows to control the execution of this pipeline.
+
+# We will have a single pipeline defined for manual execution.
+
+workflows:
+  - name: "manual_release_workflow"
+    on: 
+      - manual # This ensures the workflow is only triggered manually.
+    jobs:
+      - "Tag and Release"
