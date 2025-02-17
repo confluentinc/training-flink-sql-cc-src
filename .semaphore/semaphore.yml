@@ -3,6 +3,14 @@ name: Manual Release Pipeline
 agent:
   machine:
     type: s1-prod-ubuntu20-04-amd64-1
+
+pipelines:
+  - name: "Manual Tag and Release Pipeline"
+    auto: false # Disable automatic execution of the pipeline.
+    trigger:
+      manual: true # Enable manual trigger from the Semaphore UI.
+    block: "Tag and Release"
+
 blocks:
   - name: "Tag and Release"
     task:
