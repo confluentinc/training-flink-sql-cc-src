@@ -2,7 +2,7 @@ terraform {
   required_providers {
     confluent = {
       source  = "confluentinc/confluent"
-      version = "1.77.0"
+      version = "2.24.0"
     }
   }
 }
@@ -16,27 +16,20 @@ data "confluent_organization" "main" {}
 
 resource "confluent_environment" "shoe-env" {
   display_name = "Shoe-Env"
+
+  stream_governance {
+    package = "ESSENTIALS"
+  }
 }
 
-# Stream Governance and Kafka clusters can be in different regions as well as different cloud providers,
-# but you should to place both in the same cloud and region to restrict the fault isolation boundary.
-data "confluent_schema_registry_region" "essentials" {
-  cloud   = var.confluent_cloud_provider
-  region  = var.confluent_cloud_region
-  package = "ESSENTIALS"
-}
-
-resource "confluent_schema_registry_cluster" "essentials" {
-  package = data.confluent_schema_registry_region.essentials.package
-
+data "confluent_schema_registry_cluster" "essentials" {
   environment {
     id = confluent_environment.shoe-env.id
   }
 
-  region {
-    # See https://docs.confluent.io/cloud/current/stream-governance/packages.html#stream-governance-regions
-    id = data.confluent_schema_registry_region.essentials.id
-  }
+  depends_on = [
+    confluent_kafka_cluster.basic
+  ]
 }
 
 # Update the config to use a cloud provider and region of your choice.
@@ -239,7 +232,7 @@ resource "confluent_connector" "source_shoe_products" {
   }
 
   depends_on = [
-    confluent_schema_registry_cluster.essentials,
+    data.confluent_schema_registry_cluster.essentials,
     confluent_kafka_acl.app-shoe-connector-describe-on-cluster,
     confluent_kafka_acl.app-shoe-products-connector-write-on-target-topic,
   ]
@@ -271,7 +264,7 @@ resource "confluent_connector" "source_shoe_customers" {
   }
 
   depends_on = [
-    confluent_schema_registry_cluster.essentials,
+    data.confluent_schema_registry_cluster.essentials,
     confluent_kafka_acl.app-shoe-connector-describe-on-cluster,
     confluent_kafka_acl.app-shoe-customers-connector-write-on-target-topic,
   ]
@@ -303,7 +296,7 @@ resource "confluent_connector" "source_shoe_orders" {
   }
 
   depends_on = [
-    confluent_schema_registry_cluster.essentials,
+    data.confluent_schema_registry_cluster.essentials,
     confluent_kafka_acl.app-shoe-connector-describe-on-cluster,
     confluent_kafka_acl.app-shoe-orders-connector-write-on-target-topic,
   ]
